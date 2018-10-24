@@ -10,6 +10,8 @@ var _base = _interopRequireDefault(require("base-64"));
 
 var _lodash = require("lodash");
 
+var _bodyParser = _interopRequireDefault(require("body-parser"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // import babel from "@babel/core";
@@ -69,7 +71,9 @@ exports.onCreateDevServer = ({
   functionsOutput,
   extensions = defaultExtensions
 }) => {
-  app.use(`/.netlify/functions/`, (req, res, next) => {
+  app.use(`/.netlify/functions/`, [_bodyParser.default.text({
+    type: "*/*"
+  }), (req, res, next) => {
     const func = req.path.replace(/\/$/, ``);
     const moduleSrc = resolveFile(functionsSrc, func, extensions);
     const moduleOut = _path.default.join(functionsOutput, func) + '.js';
@@ -102,7 +106,7 @@ exports.onCreateDevServer = ({
     const callback = createCallback(res);
     const promise = handler.handler(lambdaRequest, {}, callback);
     promiseCallback(promise, callback);
-  });
+  }]);
 };
 
 exports.onPostBuild = ({}, {

@@ -5,6 +5,7 @@ import base64 from 'base-64';
 // import babel from "@babel/core";
 var babel = require('@babel/core');
 import { cloneDeep } from 'lodash';
+import bodyParser from "body-parser"
 
 function handleErr(err, res) {
   res.statusCode = 500;
@@ -58,7 +59,7 @@ exports.onCreateDevServer = (
   { app },
   { functionsSrc, functionsOutput, extensions = defaultExtensions }
 ) => {
-  app.use(`/.netlify/functions/`, (req, res, next) => {
+  app.use(`/.netlify/functions/`, [bodyParser.text({ type: "*/*" }), (req, res, next) => {
     const func = req.path.replace(/\/$/, ``);
     const moduleSrc = resolveFile(functionsSrc, func, extensions);
     const moduleOut = path.join(functionsOutput, func) + '.js';
@@ -91,7 +92,7 @@ exports.onCreateDevServer = (
     const callback = createCallback(res);
     const promise = handler.handler(lambdaRequest, {}, callback);
     promiseCallback(promise, callback);
-  });
+  }]);
 };
 
 exports.onPostBuild = ({}, { functionsSrc, functionsOutput, extensions = defaultExtensions }) => {
